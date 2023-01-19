@@ -1,193 +1,65 @@
-%{
-int yylex();
-%}
-%{
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#define YYDEBUG 1
+%option noyywrap
 
-#define TYPE_INT 1
-#define TYPE_STRING 2
-#define TYPE_COMP 3
- int yylex(void);
- int yyerror(char* s);
-
+%{
+#include "lab56.tab.h"
 %}
 
+%option noyywrap
+%option caseless
+%option yylineno
+%option lex-compat
 
-%union{
-    int l_val;
-    char *p_val;
-}
+letter      [A-Za-z]
+underscore  "_"
+digit     [0-9]
+non_zero_digit    [1-9]
+zero        "0"
+identifier  {underscore}*{letter}({letter}|{digit}|{underscore})*
+number      ("-")?{non_zero_digit}{digit}*
+string      \"[^\n]*\"
+delimiter   [;,.]
+operator [+*/()<>]|"-"|"["|"]"|"{"|"}"|"%"
 
-%token MAIN
-%token IF
-%token ELSE
-%token WHILE
-%token FOR
+%x COMMENT
 
-
-%token ID
-%token <p_val> NUMBER_CONST
-%token <p_val> ZERO_CONST
-%token STRING_CONST
-
-%token INT
-%token STRING
-%token CHAR
-%token FLOAT
-%token BOOL
-
-%token COUT
-%token CIN
-%right '='
-%left '<'
-%left '>'
-%right 'ASSIG'
-%left NE
-%left GE
-%left LE
-%left '+' 
-%left '-'
-%left '*' 
-%left '/'
-
-%token '('
-%token ')'
-%token '{'
-%token '}'
-%token '['
-%token ']'
-%token ':'
-%token ';'
-%token '\''
-%token ' '
-%token '?'
-%token '!'
-%token '.'
-%token '\n'
-
-%left OR
-%left AND
-
-%token ATR
-%token EQ
 %%
+[ \t\n]
 
-program:    MAIN code 
-    ;
-code:       declstmt
-    |       stmt
-    |       declstmt code
-    |       stmt code
-    ;
+"/*" { BEGIN COMMENT; }
 
-declstmt:
-        |  declvar
-        ;  
-declvar:   declsimpl
-        |   declarr
-        ;
-declsimpl:   type declmulti ';'
-	;
-declmulti:   variable
-	|    ID ',' declmulti
-        ;
-declarr:   type ID '[' NUMBER_CONST ']' ';'
-        ;
+<COMMENT>[^*/]+ { /* ignore anything that is not '*' or '/' */ }
+<COMMENT>("*"+)"/" { BEGIN INITIAL; }
+<COMMENT>[*/] { /* residual stuff */ }
 
-type:       INT
-        |   STRING
-        |   BOOL
-        |   FLOAT
-        |   CHAR
-        ;
-stmt: 
-        |   stmt_atr ';'
-        |   stmt_if 
-        |   stmt_while 
-	|   stmt_for
-        |   stmt_read ';'
-        |   stmt_print ';'
-	|   stmt_atr ';' stmt
-        |   stmt_if stmt
-        |   stmt_while stmt
-        |   stmt_read ';' stmt
-        |   stmt_print ';' stmt
-        ;
-stmt_atr:   variable ATR expression
-        ;
-variable:   ID
-        |   ID '[' expression ']'
-        ;
-expression: factor
-        | expression '+' expression
-        | expression '-' expression
-        | expression '*' expression
-        | expression '/' expression
-        | expression '%' expression
-        ;
-factor:     ID
-        |   constant
-        |   '(' expression ')'
-        |   ID '[' expression ']'
-        ;
-constant:   NUMBER_CONST
-        |   ZERO_CONST
-        |   STRING_CONST
-        ;
-stmt_if:    IF '(' condition ')' '{' stmt '}' else_branch
-        ;
-else_branch:
-        |   ELSE '{' stmt '}'
-        ;
-condition:  expr_log
-        |   expression op_rel expression
-        ;
-expr_log:   factor_log
-        |   expr_log AND expr_log
-        |   expr_log OR expr_log
-        ;
-factor_log: '(' condition ')'
-        ;
-op_rel:     EQ
-        |   '<'
-        |   '>'
-        |   NE
-        |   LE
-        |   GE
-        ;
-stmt_while: WHILE '(' condition ')' '{' stmt '}'
-        
-stmt_for: FOR '(' stmt_atr ',' condition ',' stmt_atr ')' '{' stmt '}'
-        
-stmt_print: COUT '<<' elem_list ';'
-        ;
-elem_list:  elem
-        |   elem_list ',' elem
-        ;
-elem:       expression
-        ;
-stmt_read:  CIN '>>' id_list ';'
-        ;
-id_list:    ID
-        |   id_list ',' ID
-        ;
-        
+main     {return MAIN;}
+
+
+integer     {return INT;}
+string      {return STRING;}
+
+CIN        {return CIN;}
+COUT       {return COUT;}
+
+
+if          {return IF;}
+else        {return ELSE;}
+while       {return WHILE;}
+for	        {return FOR;}
+
+"="         {return ATR;}
+"<="        {return LE;}
+"=="        {return EQ;}
+">="        {return GE;}
+"!="        {return NE;}
+"||"        {return OR;}
+"&&"        {return AND;}
+
+{identifier} {return ID;}
+{number}     {return NUMBER_CONST;}
+{zero}       {return ZERO_CONST;}
+{string}     {return STRING_CONST;}
+
+{delimiter}	{return yytext[0];}
+{operator}	{return yytext[0];}
+
 %%
-
-int yyerror(char *s)
-{
-  printf("%s\n", s);
-  return 0;
-}
-
-extern FILE *yyin;
-
-int main(int argc, char **argv)
-{
-  if(argc>1) yyin = fopen(argv[1], "r");
-  if((argc>2)&&(!strcmp(argv[2],"-d"))) yydebug = 1;
-  if(!yyparse()) fprintf(stderr,"\tO.K.\n");
-}

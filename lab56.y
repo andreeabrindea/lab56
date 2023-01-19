@@ -1,12 +1,17 @@
 %{
+int yylex();
+%}
+%{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define YYDEBUG 1
 
 #define TYPE_INT 1
 #define TYPE_STRING 2
 #define TYPE_COMP 3
-
+ int yylex(void);
+ int yyerror(char* s);
 
 %}
 
@@ -172,9 +177,10 @@ id_list:    ID
         
 %%
 
-yyerror(char *s)
+int yyerror(char *s)
 {
   printf("%s\n", s);
+  return 0;
 }
 
 extern FILE *yyin;
