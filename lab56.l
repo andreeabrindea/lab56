@@ -25,7 +25,7 @@ operator [+*/()<>]|"-"|"["|"]"|"{"|"}"|"%"
 %%
 [ \t\n]
 
-"/*" { BEGIN COMMENT; }
+"/*" { COMMENT; }
 
 <COMMENT>[^*/]+ { /* ignore anything that is not '*' or '/' */ }
 <COMMENT>("*"+)"/" { BEGIN INITIAL; }

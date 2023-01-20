@@ -75,26 +75,26 @@ int yylex();
 %token EQ
 %%
 
-program:    MAIN code 
+program:    INT MAIN '(' ')' '{' code '}' 
     ;
-code:       declstmt
-    |       stmt
-    |       declstmt code
-    |       stmt code
+code:       declaration_list
+    |       statement 
+    |       declaration code
+    |       statement code
     ;
 
-declstmt:
+declaration:
         |  declvar
         ;  
-declvar:   declsimpl
-        |   declarr
+declvar:   declvar
+        |  arraydecl
         ;
-declsimpl:   type declmulti ';'
+declaration_list:   type declmulti ';'
 	;
 declmulti:   variable
 	|    ID ',' declmulti
         ;
-declarr:   type ID '[' NUMBER_CONST ']' ';'
+arraydecl :   type ID '[' NUMBER_CONST ']' ';'
         ;
 
 type:       INT
@@ -103,18 +103,18 @@ type:       INT
         |   FLOAT
         |   CHAR
         ;
-stmt: 
+statement: 
         |   stmt_atr ';'
-        |   stmt_if 
-        |   stmt_while 
-	|   stmt_for
-        |   stmt_read ';'
-        |   stmt_print ';'
-	|   stmt_atr ';' stmt
-        |   stmt_if stmt
-        |   stmt_while stmt
-        |   stmt_read ';' stmt
-        |   stmt_print ';' stmt
+        |   if_statement 
+        |   while_statement
+	|   for_statement
+        |   input_statement ';'
+        |   output_statement ';'
+	|   stmt_atr ';' statement 
+        |   if_statement statement 
+        |   while_statement statement 
+        |   input_statement ';' statement 
+        |   output_statement ';' statement 
         ;
 stmt_atr:   variable ATR expression
         ;
@@ -137,13 +137,13 @@ constant:   NUMBER_CONST
         |   ZERO_CONST
         |   STRING_CONST
         ;
-stmt_if:    IF '(' condition ')' '{' stmt '}' else_branch
+if_statement:    IF '(' condition ')' '{' statement '}' else_branch
         ;
 else_branch:
-        |   ELSE '{' stmt '}'
+        |   ELSE '{' statement '}'
         ;
 condition:  expr_log
-        |   expression op_rel expression
+        |   expression relation expression
         ;
 expr_log:   factor_log
         |   expr_log AND expr_log
@@ -151,25 +151,25 @@ expr_log:   factor_log
         ;
 factor_log: '(' condition ')'
         ;
-op_rel:     EQ
+relation:     EQ
         |   '<'
         |   '>'
         |   NE
         |   LE
         |   GE
         ;
-stmt_while: WHILE '(' condition ')' '{' stmt '}'
+while_statement: WHILE '(' condition ')' '{' statement '}'
         
-stmt_for: FOR '(' stmt_atr ',' condition ',' stmt_atr ')' '{' stmt '}'
+for_statement: FOR '(' stmt_atr ',' condition ',' stmt_atr ')' '{' statement '}'
         
-stmt_print: COUT '<<' elem_list ';'
+output_statement: COUT '<''<' elem_list ';'
         ;
 elem_list:  elem
         |   elem_list ',' elem
         ;
 elem:       expression
         ;
-stmt_read:  CIN '>>' id_list ';'
+input_statement:  CIN '>''>' id_list ';'
         ;
 id_list:    ID
         |   id_list ',' ID
