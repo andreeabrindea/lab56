@@ -3,7 +3,7 @@ int yylex();
 %}
 %{
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> 
 #include <string.h>
 #define YYDEBUG 1
 
@@ -44,7 +44,6 @@ int yylex();
 %right '='
 %left '<'
 %left '>'
-%right 'ASSIG'
 %left NE
 %left GE
 %left LE
@@ -71,11 +70,11 @@ int yylex();
 %left OR
 %left AND
 
-%token ATR
+%token '='
 %token EQ
 %%
 
-program:    INT MAIN '(' ')' '{' code '}' 
+program:    MAIN '(' ')' '{' code '}' 
     ;
 code:       declaration_list
     |       statement 
@@ -86,7 +85,7 @@ code:       declaration_list
 declaration:
         |  declvar
         ;  
-declvar:   declvar
+declvar:
         |  arraydecl
         ;
 declaration_list:   type declmulti ';'
@@ -109,14 +108,14 @@ statement:
         |   while_statement
 	|   for_statement
         |   input_statement ';'
-        |   output_statement ';'
+        |   output_statement';'
 	|   stmt_atr ';' statement 
         |   if_statement statement 
         |   while_statement statement 
-        |   input_statement ';' statement 
-        |   output_statement ';' statement 
+        |   input_statement  statement 
+        |   output_statement  statement 
         ;
-stmt_atr:   variable ATR expression
+stmt_atr:   type variable '=' expression
         ;
 variable:   ID
         |   ID '[' expression ']'

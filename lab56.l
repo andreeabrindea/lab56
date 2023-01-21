@@ -46,7 +46,6 @@ else        {return ELSE;}
 while       {return WHILE;}
 for	        {return FOR;}
 
-"="         {return ATR;}
 "<="        {return LE;}
 "=="        {return EQ;}
 ">="        {return GE;}
@@ -61,5 +60,13 @@ for	        {return FOR;}
 
 {delimiter}	{return yytext[0];}
 {operator}	{return yytext[0];}
+
+
+[ \t]+ {}
+		 
+[+-]?0[0-9]*                    {printf("Illegal integer at line\n"); return -1;}
+[0-9]+[a-zA-Z_]+[a-zA-Z0-9_]*   {printf("Illegal identifier\n"); return -1;}
+\'[a-zA-Z0-9]\'             {printf("Character of length >=2 at line\n"); return -1;}
+.                               {printf("Lexical error\n"); return -1;}
 
 %%
